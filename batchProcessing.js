@@ -27,3 +27,41 @@ function* chunk(batchSize, items) {
 for (const batch of chunk(2, array)) {
   console.log(batch);
 }
+
+class BatchProcessor {
+  constructor(batchSize) {
+    this.batchSize = batchSize;
+  }
+
+  *syncBatch(items) {
+    for (let i = 0; i < items.length; i += this.batchSize) {
+      yield items.slice(i, i + this.batchSize);
+    }
+  }
+
+  async processAsync(items) {
+    let batchNum = 1;
+    for (let i = 0; i < items.length; i += this.batchSize) {
+      await new Promise((resolve, reject) => {
+        const batch = items.slice(i, i + this.batchSize);
+        console.log(`Batch ${batchNum}:  ${batch}`);
+        batchNum++;
+        resolve();
+      });
+    }
+  }
+}
+
+// Example Usage:
+
+const processor = new BatchProcessor(3);
+
+// 🔹 Synchronous Processing
+const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+for (const batch of processor.syncBatch(numbers)) {
+  console.log("Processing batch:", batch);
+}
+
+// 🔹 Asynchronous Processing
+processor.processAsync(numbers);
+
